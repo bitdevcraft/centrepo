@@ -2,14 +2,7 @@
   "$schema": "https://json.schemastore.org/tsconfig",
   "extends": ["./base.json", "@tsconfig/node-lts/tsconfig.json"],
   "compilerOptions": {
-    "outDir": "./dist",
-    "rootDir": "./src",
     "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "paths": {
-      "@/*": ["./src/*"]
-    }
-  },
-  "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "dist"]
+    "moduleResolution": "Bundler"
+  }
 }
