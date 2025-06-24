@@ -9,6 +9,9 @@
     "check-types": "turbo run check-types"
   },
   "devDependencies": {
+    "@tsconfig/next": "^2.0.3",
+    "@tsconfig/node-lts": "^22.0.2",
+    "@tsconfig/recommended": "^1.0.10",
     "prettier": "^3.6.0",
     "turbo": "^2.5.4",
     "typescript": "5.8.2"
