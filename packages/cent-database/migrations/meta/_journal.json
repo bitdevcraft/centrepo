@@ -15,6 +15,27 @@
       "when": 1750828966369,
       "tag": "0001_naive_donald_blake",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1750832732488,
+      "tag": "0002_slimy_skreet",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1750832789227,
+      "tag": "0003_fresh_jimmy_woo",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1750837556795,
+      "tag": "0004_cute_tyger_tiger",
+      "breakpoints": true
     }
   ]
 }

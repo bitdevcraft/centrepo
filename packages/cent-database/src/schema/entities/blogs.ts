@@ -1,6 +1,17 @@
-import { pgTable } from "drizzle-orm/pg-core";
-import { baseModel } from "../abstract/baseModel";
+import { jsonb, pgTable, text } from "drizzle-orm/pg-core";
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import { baseModelWithOwner } from "../abstract/baseModelWithOwner";
 
 export const blogsTable = pgTable("blogs", {
-  ...baseModel,
+  ...baseModelWithOwner,
+  slug: text("slug").notNull().unique(),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  meta: jsonb("meta").$type<Record<string, any>>().default({}),
 });
+
+export const blogSelectSchema = createSelectSchema(blogsTable);
+export const blogInsertSchema = createInsertSchema(blogsTable);
+
+export type Blog = typeof blogsTable.$inferSelect;
+export type NewBlog = typeof blogsTable.$inferInsert;

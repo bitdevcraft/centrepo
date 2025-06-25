@@ -1,2 +1,3 @@
 export * from "./blogs";
-export * from "./comments";
+export * from "./blog-comments";
+export * from "./tasks";
