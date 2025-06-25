@@ -1,6 +1,6 @@
 import { pgTable } from "drizzle-orm/pg-core";
 import { baseModel } from "../abstract/baseModel";
 
-export const usersTable = pgTable("users", {
+export const blogsTable = pgTable("blogs", {
   ...baseModel,
 });

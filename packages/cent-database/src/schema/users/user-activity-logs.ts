@@ -1,9 +1,9 @@
 import { pgTable, text, uuid, varchar } from "drizzle-orm/pg-core";
-import { baseModelWithWorkspace } from "../abstract";
 import { usersTable } from "./users";
+import { baseModel } from "../abstract/baseModel";
 
 export const userActivityLogsTable = pgTable("user_activity_logs", {
-  ...baseModelWithWorkspace,
+  ...baseModel,
   userId: uuid("user_id")
     .references(() => usersTable.id)
     .notNull(),

@@ -1,6 +1,6 @@
 import { pgTable, uuid } from "drizzle-orm/pg-core";
-import { baseModel } from "../abstract";
 import { usersTable } from "../users";
+import { baseModel } from "../abstract/baseModel";
 
 export const workspacesTable = pgTable("workspace", {
   ...baseModel,
