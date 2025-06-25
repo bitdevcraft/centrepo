@@ -7,7 +7,7 @@ import { config as baseConfig } from "./base.js";
 
 export const nodeJsConfig = [
   ...baseConfig,
-  tseslint.config(
+  ...tseslint.config(
     {
       ignores: ["**/*.js"],
     },
