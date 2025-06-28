@@ -1,11 +1,13 @@
 import { pgTable } from "drizzle-orm/pg-core";
+
+import { createOrganizationPolicies } from "@/policies/workspace";
+
 import { baseModelWithWorkspaceAndOwner } from "../abstract/baseModelWithWorkSpaceAndOwner";
-import { createWorkspacePolicies } from "@/policies/workspace";
 
 export const tasksTable = pgTable(
   "tasks",
   {
     ...baseModelWithWorkspaceAndOwner,
   },
-  (t) => [...createWorkspacePolicies("tasks", t)]
+  (t) => [...createOrganizationPolicies("tasks", t)]
 );

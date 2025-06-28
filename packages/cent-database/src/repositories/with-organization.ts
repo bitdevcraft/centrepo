@@ -1,5 +1,6 @@
-import { db } from "@/db";
 import { sql } from "drizzle-orm";
+
+import { db } from "@/db";
 
 /**
  * Represents the type of the transaction object (`tx`) passed to the callback function
@@ -18,24 +19,24 @@ type Tx = Parameters<typeof db.transaction>[0] extends (
   : never;
 
 /**
- * Executes a function within a database transaction, setting the current workspace context for the duration of the transaction.
+ * Executes a function within a database transaction, setting the current organization context for the duration of the transaction.
  *
  * @template T The return type of the provided function.
- * @param workspaceId - The ID of the workspace to set as the current context for the transaction.
+ * @param organizationId - The ID of the organization to set as the current context for the transaction.
  * @param fn - An asynchronous function that receives the transaction object and performs database operations.
  * @returns A promise that resolves to the result of the provided function.
  *
  * @remarks
- * This function ensures that all database operations within the transaction are executed with the specified workspace context.
- * The workspace context is set using a session variable for the duration of the transaction.
+ * This function ensures that all database operations within the transaction are executed with the specified organization context.
+ * The organization context is set using a session variable for the duration of the transaction.
  */
-export async function withWorkspaceTransaction<T>(
-  workspaceId: string,
+export async function withOrganizationTransaction<T>(
+  organizationId: string,
   fn: (tx: Tx) => Promise<T>
 ): Promise<T> {
   return await db.transaction(async (tx) => {
     await tx.execute(
-      sql`SET LOCAL app.current_workspace = ${sql.raw(`'${workspaceId}'`)}`
+      sql`SET LOCAL app.current_organization = ${sql.raw(`'${organizationId}'`)}`
     );
 
     const result = await fn(tx);

@@ -1,1 +1,1 @@
-export * from "./with-workspace";
+export * from "./with-organization";

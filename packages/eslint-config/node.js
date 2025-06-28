@@ -18,7 +18,6 @@ export const nodeJsConfig = [
       languageOptions: {
         parserOptions: {
           projectService: true,
-          tsconfigRootDir: import.meta.dirname,
         },
       },
     }

@@ -1,10 +1,11 @@
-import { uuid } from "drizzle-orm/pg-core";
+import { text } from "drizzle-orm/pg-core";
+
+import { organizationsTable } from "../organizations";
 import { baseModel } from "./baseModel";
-import { workspacesTable } from "../workspaces";
 
 export const baseModelWithWorkspace = {
   ...baseModel,
-  workspaceId: uuid("workspace_id")
-    .references(() => workspacesTable.id)
+  organizationId: text("organization_id")
+    .references(() => organizationsTable.id)
     .notNull(),
 };

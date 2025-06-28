@@ -1,0 +1,23 @@
+{
+  "name": "@repo/cent-auth",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'Add dev script here'",
+    "build": "echo 'Add build script here'",
+    "test": "echo 'Add test script here'",
+    "lint": "echo 'Add lint script here'"
+  },
+  "dependencies": {
+    "@repo/cent-database": "workspace:*",
+    "better-auth": "^1.2.12",
+    "dotenv": "^16.5.0",
+    "pg": "^8.16.2"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "^24.0.4",
+    "dotenv-cli": "^8.0.0"
+  }
+}

@@ -1,5 +1,8 @@
-import { uuid } from "drizzle-orm/pg-core";
+import { randomUUID } from "crypto";
+import { text } from "drizzle-orm/pg-core";
 
 export const baseIdModel = {
-  id: uuid().defaultRandom().primaryKey(),
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => randomUUID()),
 };

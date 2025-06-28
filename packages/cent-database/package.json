@@ -1,11 +1,10 @@
 {
-  "name": "cent-database",
+  "name": "@repo/cent-database",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "sideEffects": false,
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -20,7 +19,7 @@
     "@faker-js/faker": "^9.8.0",
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@types/node": "^22.15.3",
+    "@types/node": "^24.0.4",
     "@types/pg": "^8.15.4",
     "@types/prompts": "^2.4.9",
     "dotenv-cli": "^8.0.0",
@@ -40,6 +39,17 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
-    }
+    },
+    "./schema": {
+      "types": "./dist/schema.d.ts",
+      "import": "./dist/schema.js",
+      "default": "./dist/schema.js"
+    },
+    "./repositories": {
+      "types": "./dist/repositories.d.ts",
+      "import": "./dist/repositories.js",
+      "default": "./dist/repositories.js"
+    },
+    "./package.json": "./package.json"
   }
 }
