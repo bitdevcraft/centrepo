@@ -15,6 +15,13 @@
       "when": 1751128002716,
       "tag": "0001_wooden_moon_knight",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1751132461603,
+      "tag": "0002_lethal_hannibal_king",
+      "breakpoints": true
     }
   ]
 }

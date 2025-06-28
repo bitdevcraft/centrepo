@@ -3,8 +3,8 @@ import { migrate } from "drizzle-orm/postgres-js/migrator";
 import postgres from "postgres";
 import "dotenv/config";
 
-import * as schema from "./schema";
 import { getConfig } from "./config/environments";
+import * as schema from "./schema";
 
 // Get environment-specific configuration
 const config = getConfig();
@@ -24,8 +24,8 @@ export const migrationClient = postgres(connectionString, {
 
 // Client for queries
 export const queryClient = postgres(connectionString, {
-  max: config.database.maxConnections,
   idle_timeout: config.database.idleTimeout,
+  max: config.database.maxConnections,
   ssl: config.database.ssl,
 });
 

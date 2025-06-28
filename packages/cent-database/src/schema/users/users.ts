@@ -8,7 +8,6 @@ export const usersTable = pgTable("users", {
   emailVerified: boolean("email_verified"),
   image: text("image"),
   name: text("name"),
-  username: varchar("username", { length: 50 }).notNull().unique(),
 });
 
 export type NewUser = typeof usersTable.$inferInsert;
