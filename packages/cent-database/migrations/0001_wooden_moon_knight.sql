@@ -1,2 +1,0 @@
-ALTER TABLE "user_sessions" ADD COLUMN "active_organization_id" text;--> statement-breakpoint
-ALTER TABLE "user_sessions" ADD CONSTRAINT "user_sessions_active_organization_id_organizations_id_fk" FOREIGN KEY ("active_organization_id") REFERENCES "public"."organizations"("id") ON DELETE no action ON UPDATE no action;

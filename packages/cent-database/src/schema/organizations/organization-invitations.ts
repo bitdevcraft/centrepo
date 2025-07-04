@@ -6,5 +6,5 @@ export const organizationInvitationsTable = pgTable(
   "organization_invitations",
   {
     ...baseModel,
-  }
+  },
 );

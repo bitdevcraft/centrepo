@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1751127651005,
-      "tag": "0000_cloudy_nehzno",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1751128002716,
-      "tag": "0001_wooden_moon_knight",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1751132461603,
-      "tag": "0002_lethal_hannibal_king",
+      "when": 1751545686612,
+      "tag": "0000_little_loki",
       "breakpoints": true
     }
   ]

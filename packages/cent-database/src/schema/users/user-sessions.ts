@@ -7,7 +7,7 @@ import { organizationsTable } from "../organizations";
 export const userSessionsTable = pgTable("user_sessions", {
   ...baseModel,
   activeOrganizationId: text("active_organization_id").references(
-    () => organizationsTable.id
+    () => organizationsTable.id,
   ),
   expiresAt: timestamp("expires_at", {
     mode: "date",

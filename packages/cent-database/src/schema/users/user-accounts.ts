@@ -18,4 +18,3 @@ export const userAccountsTable = pgTable("user_accounts", {
     .references(() => usersTable.id)
     .notNull(),
 });
-

@@ -9,5 +9,5 @@ export const tasksTable = pgTable(
   {
     ...baseModelWithWorkspaceAndOwner,
   },
-  (t) => [...createOrganizationPolicies("tasks", t)]
+  (t) => [...createOrganizationPolicies("tasks", t)],
 );

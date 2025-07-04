@@ -13,7 +13,7 @@ import { db } from "@/db";
  * Then `Tx` will be inferred as `Transaction`.
  */
 type Tx = Parameters<typeof db.transaction>[0] extends (
-  tx: infer T
+  tx: infer T,
 ) => Promise<unknown>
   ? T
   : never;
@@ -32,11 +32,11 @@ type Tx = Parameters<typeof db.transaction>[0] extends (
  */
 export async function withOrganizationTransaction<T>(
   organizationId: string,
-  fn: (tx: Tx) => Promise<T>
+  fn: (tx: Tx) => Promise<T>,
 ): Promise<T> {
   return await db.transaction(async (tx) => {
     await tx.execute(
-      sql`SET LOCAL app.current_organization = ${sql.raw(`'${organizationId}'`)}`
+      sql`SET LOCAL app.current_organization = ${sql.raw(`'${organizationId}'`)}`,
     );
 
     const result = await fn(tx);

@@ -12,8 +12,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.1.1",
     "@repo/cent-auth": "workspace:*",
     "@repo/cent-database": "workspace:*",
+    "@repo/cent-shared": "workspace:*",
     "@repo/ui": "workspace:*",
     "better-auth": "^1.2.12",
     "lucide-react": "^0.475.0",
@@ -21,7 +23,8 @@
     "next-themes": "^0.4.4",
     "pg": "^8.16.2",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-hook-form": "^7.59.0"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:^",

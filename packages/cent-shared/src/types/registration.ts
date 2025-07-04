@@ -1,11 +1,11 @@
 import z from "zod";
 
 import { OrganizationSchema } from "./organization";
-import { UserSchema } from "./user";
+import { SignUpUserSchema } from "./user";
 
 export const RegistrationSchema = z.object({
   organization: OrganizationSchema,
-  user: UserSchema,
+  user: SignUpUserSchema,
 });
 
 export type RegistrationFormValue = z.infer<typeof RegistrationSchema>;
