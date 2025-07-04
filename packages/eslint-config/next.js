@@ -18,6 +18,11 @@ export const nextJsConfig = [
   eslintConfigPrettier,
   ...tseslint.configs.recommended,
   {
+    rules: {
+      "@typescript-eslint/ban-ts-comment": "off",
+    },
+  },
+  {
     ...pluginReact.configs.flat.recommended,
     languageOptions: {
       ...pluginReact.configs.flat.recommended.languageOptions,
