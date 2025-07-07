@@ -15,6 +15,7 @@ export const ourFileRouter: {
       type: string;
       url: string;
     };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     errorShape: any;
   }>;
 } = {
