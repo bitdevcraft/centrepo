@@ -1,26 +1,45 @@
-"use client";
-
 import {
   closestCenter,
+  closestCorners,
   DndContext,
+  DragCancelEvent,
   DragEndEvent,
+  DragMoveEvent,
   DragOverEvent,
   DragOverlay,
   DragStartEvent,
   PointerSensor,
+  pointerWithin,
   UniqueIdentifier,
   useDroppable,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
+import { snapCenterToCursor, createSnapModifier } from "@dnd-kit/modifiers";
 import { DroppableContainer } from "./components/droppable-container";
 import { useComponentStore } from "./store/use-component-store";
 import { Button } from "../shadcn/button";
 import { SortableContext } from "@dnd-kit/sortable";
 import { cn } from "@repo/ui/lib/utils";
 import { createParser, parseAsInteger, useQueryState } from "nuqs";
+import { drop } from "lodash";
 
-function CanvasNode({ id }: { id: UniqueIdentifier }) {
+import { Minus } from "lucide-react";
+import { DroppableGap } from "./components/droppable-gap";
+
+function CanvasNode({
+  id,
+  dragActiveId,
+  dropDisable = false,
+  children,
+  parentId,
+  ...props
+}: {
+  id: UniqueIdentifier;
+  dragActiveId?: UniqueIdentifier;
+  parentId?: UniqueIdentifier;
+  dropDisable?: boolean;
+} & Omit<React.ComponentProps<"div">, "id">) {
   const node = useComponentStore((s) => s.data[id]);
   const appendChild = useComponentStore((s) => s.appendChild);
 
@@ -28,41 +47,47 @@ function CanvasNode({ id }: { id: UniqueIdentifier }) {
 
   return (
     <>
-      {node.type !== "gap" ? (
-        <DroppableContainer
-          id={id}
-          items={node.items}
-          className="p-4 border min-size-16"
+      <DroppableContainer
+        id={id}
+        items={node.items}
+        className="p-4 border"
+        disabled={dropDisable}
+        droppableGap={children}
+      >
+        <strong>{node.type}</strong> ({id})
+        <SortableContext items={node.items}>
+          <div className="">
+            {node.items.map((childId, idx) => (
+              <div key={childId}>
+                {idx === 0 ? (
+                  <DroppableGap id={id} index={idx} hidden={!dragActiveId} />
+                ) : (
+                  <></>
+                )}
+                <CanvasNode
+                  id={childId}
+                  dragActiveId={dragActiveId}
+                  dropDisable={dropDisable || id === dragActiveId}
+                  parentId={id}
+                >
+                  <DroppableGap
+                    id={id}
+                    index={idx + 1}
+                    hidden={!dragActiveId}
+                  />
+                </CanvasNode>
+              </div>
+            ))}
+          </div>
+        </SortableContext>
+        <Button
+          onClick={() => appendChild(id, "container")}
+          className="mx-auto"
         >
-          <strong>{node.type}</strong> ({id})
-          <SortableContext items={node.items}>
-            <div className="grid gap-4">
-              {node.items.map((childId) => (
-                <CanvasNode key={childId} id={childId} />
-              ))}
-            </div>
-          </SortableContext>
-          <Button onClick={() => appendChild(id, "container")}>+ child</Button>
-        </DroppableContainer>
-      ) : (
-        <Droppable id={id} />
-      )}
+          + child
+        </Button>
+      </DroppableContainer>
     </>
-  );
-}
-
-function Droppable({
-  id,
-  ...props
-}: Omit<React.ComponentProps<"div">, "id"> & { id: UniqueIdentifier }) {
-  const { isOver, setNodeRef } = useDroppable({ id });
-
-  return (
-    <div
-      ref={setNodeRef}
-      {...props}
-      className={cn(isOver && `border border-4 border-red-100`)}
-    />
   );
 }
 
@@ -78,26 +103,33 @@ const parseAsUniqueIdentifier = createParser({
 export function Canvas() {
   const moveComponent = useComponentStore((s) => s.moveComponent);
 
-  const [activeId, setActiveId] = useQueryState(
-    "activeId",
+  const [dragActiveId, setDragActiveId] = useQueryState(
+    "dragActiveId",
     parseAsUniqueIdentifier.withDefault("")
   );
 
   const handleDragStart = (event: DragStartEvent) => {
-    setActiveId(event.active.id);
+    setDragActiveId(event.active.id);
+  };
+  const handleDragCancel = (event: DragCancelEvent) => {
+    setDragActiveId("");
+  };
+
+  const handleDragMove = (event: DragMoveEvent) => {
+    // console.log(event);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
-    //
-    setActiveId("");
-
-    console.log(event);
+    setDragActiveId("");
 
     const { over, active } = event;
 
     if (active.id === "root-canvas") return;
 
     if (!over) return;
+
+    console.log("Over", over.id);
+    console.log("Active", active.id);
 
     moveComponent(over.id, active.id);
   };
@@ -109,27 +141,25 @@ export function Canvas() {
 
   return (
     <DndContext
-      collisionDetection={closestCenter}
+      collisionDetection={collisionDetection}
       sensors={sensors}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onDragOver={handleDragOver}
+      onDragMove={handleDragMove}
+      onDragCancel={handleDragCancel}
     >
-      <CanvasNode id={"root-canvas"} />
+      <CanvasNode id={"root-canvas"} dragActiveId={dragActiveId} />
 
-      <DragOverlay>
-        {activeId && (
-          <div
-            style={{
-              padding: 8,
-              border: "1px dashed #cc0",
-              background: "#ffd",
-            }}
-          >
-            {activeId}
-          </div>
-        )}
+      <DragOverlay className="justify-start items-start">
+        {/* <div className="border-dashed bg-blue-100">{dragActiveId}</div> */}
+
+        <CanvasNode id={dragActiveId} />
       </DragOverlay>
     </DndContext>
   );
+}
+
+function collisionDetection(args: any) {
+  return pointerWithin(args) || closestCorners(args);
 }
