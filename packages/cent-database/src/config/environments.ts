@@ -40,6 +40,6 @@ const configurations: Record<Environment, EnvironmentConfig> = {
 };
 
 export function getConfig(): EnvironmentConfig {
-  const env = (process.env.NODE_ENV || "development") as Environment;
-  return configurations[env] || configurations.development;
+  const env = (process.env.NODE_ENV ?? "development") as Environment;
+  return configurations[env];
 }

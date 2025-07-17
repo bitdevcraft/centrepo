@@ -21,7 +21,7 @@ export function DroppableGap({
       id={`droppable|${id}|${index}`}
       ref={setNodeRef}
       className={cn(
-        !isOver && `w-full border border-0 border-b-4 border-blue-100`
+        !isOver && `w-full border border-0 border-b-6 border-blue-100`
       )}
       style={{
         minHeight: 2,
@@ -32,7 +32,7 @@ export function DroppableGap({
     >
       {children}
       {isOver && (
-        <div className="flex w-full items-center">
+        <div className="flex w-full items-center gap-2">
           <div className="border border-0 border-b-4 border-blue-500 flex-grow"></div>
           <span className="text-center">Drop Here</span>
           <div className="border border-0 border-b-4 border-blue-500 flex-grow"></div>

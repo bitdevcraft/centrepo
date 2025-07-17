@@ -1,8 +1,9 @@
 "use server";
 
-import { headers } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
-import { authClient } from "./lib/auth/auth-client";
+import { getSessionCookie } from "better-auth/cookies";
+import { auth } from "@repo/cent-auth";
+import { headers } from "next/headers";
 
 const protectedRoutes = ["/cent"];
 const signInRoutes = ["/auth/login", "/auth/signup"];
@@ -12,27 +13,23 @@ const loginUrl = "/auth/login";
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
   const response = NextResponse.next();
-  const headerList = await headers();
 
-  const session = await authClient.getSession({
-    fetchOptions: {
-      headers: Object.fromEntries(headerList.entries()),
-    },
+  const sessionCookie = await auth.api.getSession({
+    headers: await headers(),
   });
-
   const isProtectedRoute = protectedRoutes.some((route) =>
     path.startsWith(route)
   );
 
-  console.log(session);
+  console.log(sessionCookie);
 
   const isSignInRoute = signInRoutes.some((route) => path.startsWith(route));
 
-  if (isProtectedRoute && !session) {
+  if (isProtectedRoute && !sessionCookie) {
     return NextResponse.redirect(new URL(loginUrl, request.url));
   }
 
-  if (isSignInRoute && session) {
+  if (isSignInRoute && sessionCookie) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
@@ -44,4 +41,5 @@ export const config = {
     // Skip all internal paths (_next)
     "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)",
   ],
+  runtime: "nodejs",
 };

@@ -1,143 +1,271 @@
 import { UniqueIdentifier } from "@dnd-kit/core";
 import { create } from "zustand";
-import { nanoid, customRandom, urlAlphabet } from "nanoid";
-import { drop, over } from "lodash";
+import { nanoid } from "nanoid";
 import { arrayMove } from "@dnd-kit/sortable";
-import { an } from "node_modules/@faker-js/faker/dist/airline-BUL6NtOJ";
+import { insertAt } from "../utils/array";
+import { UiComponentConfig } from "../types/ui-component";
+import { stat } from "fs";
 
-export interface ComponentConfig {
-  type: string;
-  items: UniqueIdentifier[];
-  parent?: UniqueIdentifier;
-}
-
-interface ComponentZustand {
-  data: Record<UniqueIdentifier, ComponentConfig>;
+interface ComponentStore {
+  data: Record<UniqueIdentifier, UiComponentConfig>;
+  activeId: UniqueIdentifier;
+  dragActiveId: UniqueIdentifier;
+  hoverActiveId: UniqueIdentifier;
+  setActiveId: (id: UniqueIdentifier) => void;
+  setDragActiveId: (id: UniqueIdentifier) => void;
+  setHoverActiveId: (id: UniqueIdentifier) => void;
   appendComponent: (parentId: UniqueIdentifier, type: string) => void;
   appendChild: (parentId: UniqueIdentifier, type: string) => void;
-  moveComponent: (parentId: UniqueIdentifier, id: UniqueIdentifier) => void;
+  moveComponent: (droppableId: UniqueIdentifier, id: UniqueIdentifier) => void;
+  duplicateComponent: (
+    id: UniqueIdentifier,
+    targetParentId?: UniqueIdentifier
+  ) => void;
 }
 
-export const useComponentStore = create<ComponentZustand>((set, get) => ({
-  // start with a single "root" container
-  data: {
-    "root-canvas": {
-      type: "root",
+export const useComponentStore = create<ComponentStore>((set, get) => {
+  const uniq = <T>(arr: T[]) => Array.from(new Set(arr));
+
+  const createAndAttach = (
+    data: ComponentStore["data"],
+    parentId: UniqueIdentifier,
+    type: string,
+    includeParentRef: boolean
+  ) => {
+    const id = nanoid() as UniqueIdentifier;
+    const parent = data[parentId];
+
+    if (!parent) return { data };
+
+    const newNode: UiComponentConfig = {
+      type,
       items: [],
+      ...(includeParentRef ? { parent: parentId } : {}),
+    };
+
+    return {
+      data: {
+        ...data,
+        [id]: newNode,
+        [parentId]: {
+          ...parent,
+          items: uniq([...parent.items, id]),
+        },
+      },
+    };
+  };
+
+  function duplicateTree(
+    data: ComponentStore["data"],
+    sourceId: UniqueIdentifier,
+    idMap: Record<string, UniqueIdentifier> = {}
+  ): {
+    newData: Record<UniqueIdentifier, UiComponentConfig>;
+    newId: UniqueIdentifier;
+  } {
+    const source = data[sourceId];
+    if (!source) throw new Error(`Component ${sourceId} not found`);
+
+    const newId = nanoid() as UniqueIdentifier;
+    idMap[sourceId] = newId;
+
+    // clone children recursively
+    let clonedData: Record<UniqueIdentifier, UiComponentConfig> = {};
+    const newItems: UniqueIdentifier[] = [];
+
+    for (const childId of source.items) {
+      const { newData: childData, newId: childNewId } = duplicateTree(
+        data,
+        childId,
+        idMap
+      );
+      // merge child subtree
+      clonedData = { ...clonedData, ...childData };
+      newItems.push(childNewId);
+    }
+
+    // clone this node
+    const clonedNode: UiComponentConfig = {
+      type: source.type,
+      items: newItems,
+      // parent will be set by caller
+    };
+    clonedData[newId] = clonedNode;
+
+    return { newData: clonedData, newId };
+  }
+
+  const parseDroppable = (droppableId: string) => {
+    const parts = droppableId.split("|");
+    if (parts.length === 3) {
+      return {
+        parentId: parts[1] as UniqueIdentifier,
+        index: Number(parts[2]),
+        isSort: true,
+      };
+    }
+    return {
+      parentId: droppableId as UniqueIdentifier,
+      index: 0,
+      isSort: false,
+    };
+  };
+
+  return {
+    // start with a single "root" container
+    data: {
+      "root-canvas": {
+        type: "root",
+        items: [],
+      },
     },
-  },
+    activeId: "",
+    dragActiveId: "",
+    hoverActiveId: "",
+    setActiveId: (id) => {
+      set((state) => ({
+        ...state,
+        activeId: id,
+      }));
+    },
+    setDragActiveId: (id) => {
+      set((state) => ({
+        ...state,
+        dragActiveId: id,
+      }));
+    },
+    setHoverActiveId: (id) => {
+      set((state) => ({
+        ...state,
+        hoverActiveId: id,
+      }));
+    },
+    appendComponent: (parentId, type) => {
+      set((state) => {
+        const { data } = createAndAttach(state.data, parentId, type, false);
+        return {
+          ...state,
+          data,
+        };
+      });
+    },
 
-  appendComponent: (parentId, type) => {
-    const id = nanoid() as UniqueIdentifier;
-    set((state) => {
-      const parent = state.data[parentId];
-      if (!parent) return {};
+    appendChild: (parentId, type) => {
+      set((state) => {
+        const { data } = createAndAttach(state.data, parentId, type, true);
+        return {
+          ...state,
+          data,
+        };
+      });
+    },
+    moveComponent: (droppableId, id) => {
+      set((state) => {
+        const { data } = state;
 
-      return {
-        data: {
-          ...state.data,
-          // 1) create the new node
-          [id]: { type, items: [] },
-          // 2) add it into the parent’s items array
-          [parentId]: {
-            ...parent,
-            items: [...new Set([...parent.items, id])],
-          },
-        },
-      };
-    });
-  },
+        const {
+          parentId: destParentId,
+          index: destIndex,
+          isSort,
+        } = parseDroppable(String(droppableId));
 
-  appendChild: (parentId, type) => {
-    const id = nanoid() as UniqueIdentifier;
-    set((state) => {
-      const parent = state.data[parentId];
-      if (!parent) return {};
+        const component = state.data[id];
+        if (!component?.parent) return { data };
 
-      return {
-        data: {
-          ...state.data,
-          [id]: { type, items: [], parent: parentId },
-          [parentId]: {
-            ...parent,
-            items: [...new Set([...parent.items, id])],
-          },
-        },
-      };
-    });
-  },
-  moveComponent: (parentId: UniqueIdentifier, id: UniqueIdentifier) => {
-    set((state) => {
-      const { data } = state;
+        const srcParentId = component.parent;
 
-      let ancestorId = parentId;
-      let ancestorIndex = 0;
+        const srcParent = state.data[srcParentId];
+        if (!srcParent) return { data };
 
-      const droppableParent = String(parentId).split("|");
-      const onSort = droppableParent.length === 3;
+        const destParent = state.data[destParentId];
+        if (!destParent) return { data };
 
-      if (onSort) {
-        ancestorId = droppableParent[1] as UniqueIdentifier;
-        ancestorIndex = Number(droppableParent[2]);
-      }
+        if (srcParentId === destParentId) {
+          const oldIdx = destParent.items.findIndex((item) => item === id);
+          const newIdx = isSort
+            ? Math.min(destIndex, destParent.items.length - 1)
+            : destParent.items.length;
 
-      const newParent = state.data[ancestorId];
-      const component = state.data[id];
+          const newArr = isSort
+            ? arrayMove(destParent.items, oldIdx, newIdx)
+            : destParent.items;
 
-      if (!component?.parent) return { data };
-
-      if (!newParent) return { data };
-      console.log("Ancestor", ancestorId);
-
-      console.log("Parent", component.parent);
-
-      const oldParent = state.data[component.parent];
-      if (!oldParent) return { data };
-
-      if (component.parent === ancestorId) {
-        const activeIdx = newParent.items.findIndex((item) => item === id);
-        const overIdx = Math.min(ancestorIndex, newParent.items.length - 1);
-
-        const newArr = arrayMove(newParent.items, activeIdx, overIdx);
+          return {
+            ...state,
+            data: {
+              ...data,
+              [destParentId]: {
+                ...destParent,
+                items: [...new Set(newArr)],
+              },
+              [id]: {
+                ...component,
+                parent: destParentId,
+              },
+            },
+          };
+        }
 
         return {
+          ...state,
           data: {
             ...data,
-            [ancestorId]: {
-              ...newParent,
-              items: [...new Set(newArr)],
+            [srcParentId]: {
+              ...srcParent,
+              items: srcParent.items.filter((childId) => childId !== id),
+            },
+            [destParentId]: {
+              ...destParent,
+              items: [...new Set(insertAt(destParent.items, destIndex, id))],
             },
             [id]: {
               ...component,
-              parent: ancestorId,
+              parent: destParentId,
             },
           },
         };
-      }
+      });
+    },
+    duplicateComponent: (id, targetParentId) => {
+      set((state) => {
+        const src = state.data[id];
+        if (!src) return { data: state.data };
 
-      return {
-        data: {
-          ...data,
-          [component.parent]: {
-            ...oldParent,
-            items: oldParent.items.filter((childId) => childId !== id),
-          },
-          [ancestorId]: {
-            ...newParent,
-            items: [...new Set(insertAt(newParent.items, ancestorIndex, id))],
-          },
-          [id]: {
-            ...component,
-            parent: ancestorId,
-          },
-        },
-      };
-    });
-  },
-}));
+        const parentId = targetParentId ?? src.parent;
+        if (!parentId) return { data: state.data };
 
-function insertAt<T>(array: T[], index: number, element: T): T[] {
-  // clamp index between 0 and array.length
-  const i = Math.max(0, Math.min(index, array.length));
-  return [...array.slice(0, i), element, ...array.slice(i)];
-}
+        // clone subtree
+        const { newData, newId } = duplicateTree(state.data, id);
+
+        // attach cloned root under parent
+        const dest = state.data[parentId];
+
+        if (!dest) return { data: state.data };
+
+        const srcIndex = dest.items.findIndex((item) => item === id);
+
+        // const updatedDestItems = uniq([...dest.items, newId]);
+        const updatedDestItems = uniq(
+          insertAt(dest.items, srcIndex + 1, newId)
+        );
+
+        return {
+          ...state,
+          data: {
+            ...state.data,
+            ...newData,
+            [parentId]: {
+              ...dest,
+              items: updatedDestItems,
+            },
+            // set parent on cloned root
+            [newId]: {
+              ...newData[newId],
+              parent: parentId,
+            },
+          },
+        } as Partial<ComponentStore>;
+      });
+    },
+  };
+});

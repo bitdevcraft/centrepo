@@ -3,14 +3,16 @@ import { CSS } from "@dnd-kit/utilities";
 
 import { useSortable } from "@dnd-kit/sortable";
 import { cn } from "@repo/ui/lib/utils";
-import { Grip } from "lucide-react";
+import { Copy, Grip, GripHorizontal, Plus } from "lucide-react";
 import { JSX, ReactNode } from "react";
+import { useComponentStore } from "../../store/use-component-store";
 
 interface Props {
   id: UniqueIdentifier;
   items: UniqueIdentifier[];
   disabled?: boolean;
   droppableGap?: ReactNode;
+  isSelected?: boolean;
 }
 
 export function DroppableContainer({
@@ -20,6 +22,7 @@ export function DroppableContainer({
   disabled = false,
   children,
   droppableGap,
+  isSelected = false,
   ...props
 }: Props & Omit<React.ComponentProps<"div">, "id">) {
   const {
@@ -39,8 +42,33 @@ export function DroppableContainer({
     disabled,
   });
 
+  const duplicateComponent = useComponentStore((s) => s.duplicateComponent);
+
   return (
-    <div>
+    <div hidden={isDragging} className="relative">
+      {isSelected && (
+        <div className="flex w-full justify-end ">
+          <div className="flex p-1 bg-blue-500 text-background gap-2 absolute -translate-y-[100%]">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+            >
+              <Plus size={15} />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                duplicateComponent(id);
+              }}
+            >
+              <Copy size={15} />
+            </button>
+            <GripHorizontal size={15} {...listeners} />
+          </div>
+        </div>
+      )}
+
       <div
         ref={setNodeRef}
         className={cn(
@@ -54,12 +82,7 @@ export function DroppableContainer({
         }}
         {...props}
       >
-        {!isDragging && (
-          <div>
-            <Grip size={20} {...listeners} />
-            {children}
-          </div>
-        )}
+        <div>{children}</div>
       </div>
       {!isDragging && <>{droppableGap}</>}
     </div>
